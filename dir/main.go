@@ -24,8 +24,6 @@ func ReadAllfile(srcFile string, level int) {
 		fmt.Printf("%s%s\n", s, obj.Name())
 		if obj.IsDir() {
 			ReadAllfile(obj.Name(), level+1)
-		} else {
-
 		}
 	}
 }
