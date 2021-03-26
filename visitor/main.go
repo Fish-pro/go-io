@@ -3,35 +3,78 @@ package main
 import "fmt"
 
 func main() {
-	e := new(Element)
-	e.Print(new(ProductionVisitor))
-	e.Print(new(TestingVisitor))
+	info := Info{}
+	var v Visitor = &info
+	v = LogVisitor{v}
+	v = NameVisitor{v}
+	v = OtherThingsVisitor{v}
+
+	loadFile := func(info *Info, err error) error {
+		info.Name = "Hao Chen"
+		info.Namespace = "MegaEase"
+		info.OtherThings = "We are running as remote team."
+		return nil
+	}
+	v.Visit(loadFile)
 }
 
-type ProductionVisitor struct {
+type VisitorFunc func(*Info, error) error
+
+type Visitor interface {
+	Visit(VisitorFunc) error
 }
 
-func (v ProductionVisitor) Visit() {
-	fmt.Println("prod")
+type Info struct {
+	Namespace   string
+	Name        string
+	OtherThings string
 }
 
-type TestingVisitor struct {
+func (info *Info) Visit(fn VisitorFunc) error {
+	return fn(info, nil)
 }
 
-func (t TestingVisitor) Visit() {
-	fmt.Println("test")
+type NameVisitor struct {
+	visitor Visitor
 }
 
-type IVisitor interface {
-	Visit() // 访问者的访问方法
+func (v NameVisitor) Visit(fn VisitorFunc) error {
+	return v.visitor.Visit(func(info *Info, err error) error {
+		fmt.Println("NameVisitor() before call function")
+		err = fn(info, err)
+		if err == nil {
+			fmt.Printf("==> Name=%s, NameSpace=%sn", info.Name, info.Namespace)
+		}
+		fmt.Println("NameVisitor() after call function")
+		return err
+	})
 }
 
-type Element struct{}
-
-func (el Element) Accept(visitor IVisitor) {
-	visitor.Visit()
+type OtherThingsVisitor struct {
+	visitor Visitor
 }
 
-func (el Element) Print(visitor IVisitor) {
-	el.Accept(visitor)
+func (v OtherThingsVisitor) Visit(fn VisitorFunc) error {
+	return v.visitor.Visit(func(info *Info, err error) error {
+		fmt.Println("OtherThingsVisitor() before call function")
+		err = fn(info, err)
+		if err == nil {
+			fmt.Printf("==> OtherThings=%sn", info.OtherThings)
+		}
+		fmt.Println("OtherThingsVisitor() after call function")
+		return err
+	})
+}
+
+type LogVisitor struct {
+	visitor Visitor
+}
+
+func (v LogVisitor) Visit(fn VisitorFunc) error {
+	return v.visitor.Visit(func(info *Info, err error) error {
+		fmt.Println("LogVisitor() before call function")
+		err = fn(info, err)
+		fmt.Println("LogVisitor() after call function")
+		return err
+	})
 }
