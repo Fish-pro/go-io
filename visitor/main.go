@@ -31,7 +31,8 @@ type Info struct {
 }
 
 func (info *Info) Visit(fn VisitorFunc) error {
-	return fn(info, nil)
+	err := fn(info, nil)
+	return err
 }
 
 type NameVisitor struct {
@@ -50,6 +51,7 @@ func (v NameVisitor) Visit(fn VisitorFunc) error {
 	})
 }
 
+// other visitor
 type OtherThingsVisitor struct {
 	visitor Visitor
 }
@@ -66,6 +68,7 @@ func (v OtherThingsVisitor) Visit(fn VisitorFunc) error {
 	})
 }
 
+// log visitor
 type LogVisitor struct {
 	visitor Visitor
 }
